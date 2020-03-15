@@ -1,19 +1,15 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import Dashboard from '../views/Dashboard'
-import Teams from '../views/Teams'
-import Team from '../views/Team'
-import Matches from '../views/Matches'
 Vue.use(Router);
 
 export default new Router({
   mode: 'history',
   base: process.env.BASE_URL,
   routes:[
-    { path: '/', name: 'dashboard', component: Dashboard },
-    { path: '/teams', name: 'teams', component: Teams },
-    { path: '/teams/:id', name: 'team', component: Team },
-    { path: '/matches', name: 'matches', component: Matches },
+    { path: '/', name: 'dashboard', component: () => import('../views/Dashboard.vue') },
+    { path: '/teams', name: 'teams', component: () => import('../views/Teams.vue') },
+    { path: '/team/:id', name: 'team', component: () => import('../views/Team.vue') },
+    { path: '/matches', name: 'matches', component: () => import('../views/Matches.vue') },
 
   ]
 })

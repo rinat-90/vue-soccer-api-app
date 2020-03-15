@@ -1,13 +1,15 @@
 const proxy = 'https://cors-anywhere.herokuapp.com/';
-const API_KEY = '7b970565e3de48238e2e5b10ca7c60b2';
+const API_KEY = process.env.VUE_APP_API_KEY;
 const BASE_URL = `${proxy}http://api.football-data.org/v2`;
 const LEAGUE_ID = 2021;
 const COMP = 'competitions';
 
 
+
 function fetchAPI(url) {
-  return fetch(url, { headers: { 'X-Auth-Token': API_KEY }, dataType: 'json' })
+  return fetch(url, { headers: { 'X-Auth-Token': API_KEY, mode: 'no-cors' }, dataType: 'json' })
     .then(response => response.json())
+    .catch(error => { throw error })
 }
 
 //FETCH ALL TEAMS
@@ -15,7 +17,7 @@ function getTeams() {
   return fetchAPI(`${ BASE_URL }/${ COMP }/${ LEAGUE_ID }/teams`)
 }
 
-//FETCH SPECIFIC TEAM
+//FETCH TEAM BY ID  
 function getTeam(id) {
   return fetchAPI(`${ BASE_URL }/teams/${ id }`)
 }
@@ -35,19 +37,20 @@ function getAllMatches() {
   return fetchAPI(`${ BASE_URL }/${ COMP }/${ LEAGUE_ID }/matches`)
 }
 
-//FETCH CURRENT MATCHDAY
-function getCurrentMatchday() {
-  return fetchAPI(`${ BASE_URL }/${ COMP }/${ LEAGUE_ID }`)
-}
-
-//FETCH CURRENT MATCHES
+//FETCH  MATCHES BY MATCHDAY
 function getMatches(num) {
   return fetchAPI(`${ BASE_URL }/${ COMP }/${ LEAGUE_ID }/matches?matchday=${ num }`)
 }
 
+
 //FETCH MATCHES FOR SPECIFIC TEAM
 function getTeamMatches(id, status, limit) {
   return fetchAPI(`${ BASE_URL }/teams/${ id }/matches?status=${ status }&limit=${ limit }`)
+}
+
+//FETCH LEAGUE INFO
+function getCurrentSeason() {
+  return fetchAPI(`${ BASE_URL }/${ COMP }/${ LEAGUE_ID }`)
 }
 
 export default {
@@ -56,7 +59,7 @@ export default {
   getTable,
   getScorers,
   getAllMatches,
-  getCurrentMatchday,
   getMatches,
-  getTeamMatches
+  getTeamMatches,
+  getCurrentSeason
 };

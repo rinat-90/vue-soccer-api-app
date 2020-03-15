@@ -1,4 +1,4 @@
-<template>
+<template v-if="squad.length">
   <v-card class="pa-4">
     <v-card-title>
       <div class="title">Squad</div>
@@ -27,7 +27,12 @@
 <script>
   export default {
     name: "SquadTable",
-    props:['squad'],
+    props:{
+      squad:{
+        type: Array,
+        required: true
+      }
+    },
     data(){
       return{
         search: '',

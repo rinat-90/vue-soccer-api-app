@@ -6,7 +6,7 @@
           <v-text-field
                   v-model="search"
                   append-icon="mdi-magnify"
-                  label="Search"
+                  label="Search..."
                   single-line
                   hide-details
           ></v-text-field>
@@ -18,10 +18,22 @@
                       loading-text="Loading... Please wait"
                       :search="search"
                       :headers="headers"
-                      :items="table">
-          <template v-slot:header.name="{ header }">
-            {{ header.text.toUpperCase() }}
+                      :items="table"
+                      class="elevation-1">
+
+          <template v-slot:item.team.name="{ item }">
+            <v-list flat style="background: transparent">
+              <v-list-item link :to="`/team/${item.team.id}`">
+                <v-list-item-avatar size="18">
+                  <v-img :src="item.team.crestUrl" />
+                </v-list-item-avatar>
+                <v-list-item-content>
+                  <v-list-item-title>{{ item.team.name | teamName }}</v-list-item-title>
+                </v-list-item-content>
+              </v-list-item>
+            </v-list>
           </template>
+          
         </v-data-table>
       </v-card-text>
     </v-card>
@@ -31,7 +43,12 @@
 <script>
   export default {
     name: "Table",
-    props: ['table'],
+    props: {
+      table:{
+        type: Array,
+        required: true
+      }
+    },
     data(){
       return{
         search: '',
@@ -51,7 +68,3 @@
     }
   }
 </script>
-
-<style scoped>
-
-</style>

@@ -1,82 +1,143 @@
 <template>
   <v-container fluid>
-    <app-spinner v-if="!team"></app-spinner>
-    <v-row  v-if="team" justify-sm="center">
+    <app-loader v-if="!team" />
+    <v-row  v-else justify-sm="center">
       <v-col xs="12" sm="10"  md="5">
-        <TeamInfo :team="team"></TeamInfo>
-        <!--MATCH DAY-->
-        <Match :match="currentMatch" :title="'Matchday'"></Match>
-        <!--NEXT MATCH DAY-->
-        <Match :match="nextMatch" :title="'Next Matchday'"></Match>
-        <!--LAST MATCH DAY-->
-        <Match :match="lastMatch" :title="'Last Matchday'"></Match>
+        <team-info-card :team="team" />
+        <v-card class="mt-5">
+          <v-card-text>
+            <div>
+              <v-subheader>Next match Matchday - {{ currentMatchday }}</v-subheader>
+            <match-card v-if="nextMatch" :match="nextMatch" :icon="getIcon(nextMatch)"/>
+            </div>
+          </v-card-text>
+          
+        </v-card>
+        <v-card class="mt-5">
+          <v-card-text>
+            <div>
+              <v-subheader>Last match Matchday - {{ currentMatchday - 1 }}</v-subheader>
+              <match-card v-if="lastMatch" :match="lastMatch" :icon="getIcon(lastMatch)"/>
+            </div>
+          </v-card-text>
+          
+        </v-card>
+        
       </v-col>
       <v-col xs="12" sm="10" md="7">
-        <SquadTable :squad="team.squad"></SquadTable>
+        <team-squad-card :squad="team.squad" />
+        <v-card v-if="finishedMatches.length">
+          <v-sparkline
+            v-if="goals"
+            :value="goals"
+            color="primary"
+            height="100"
+            padding="24"
+            stroke-linecap="round"
+            smooth
+            auto-draw
+          >
+            <template v-slot:label="item">
+            {{ item.index + 1 }}
+          </template>
+          </v-sparkline>
+        </v-card>
       </v-col>
     </v-row>
   </v-container>
 </template>
 <script>
   import Api from '../lib/Api'
-  import TeamInfo from "../components/TeamInfo";
-  import Match from "../components/Match";
-  import SquadTable from "../components/SquadTable";
+  import TeamInfoCard from "../components/Cards/TeamInfoCard";
+  import TeamSquadCard from "../components/Cards/TeamSquadCard";
+  import MatchCardMixin from '../mixins/MatchCardMixin'
+  import { mapGetters } from 'vuex'
+
   export default {
-    components:{ TeamInfo, Match, SquadTable},
+    components:{ TeamInfoCard, TeamSquadCard},
+    metaInfo(){
+      return{
+        title: this.$title('Team Info'),
+      }
+    },
+    mixins: [MatchCardMixin],
     data(){
       return{
-        currentMatchDay: 0,
         team: null,
         nextMatch: null,
-        currentMatch: null,
         lastMatch: null,
+        finishedMatches: [],
+        currentMatch: null,
       }
     },
 
-    methods:{
-      formattedDate(date){
-        return new Date(date).toLocaleTimeString()
+    computed:{
+      ...mapGetters(['icons', 'currentMatchday']),
+      goals(){
+        return this.PLmatches.length && this.team.name 
+          ? this.PLmatches.map(item => {
+            return item.score.homeTeam === this.team.name 
+              ? item.score.fullTime.homeTeam
+              : item.score.fullTime.awayTeam
+          }) 
+          : []
       },
-      loadCurrentMatchday(){
-        return Api.getCurrentMatchday().then(res => this.currentMatchDay = res.currentSeason.currentMatchday)
-      },
-      loadCurrentMatches(val){
-        return Api.getMatches(val).then(res => {
-          return res.matches.find(match => {
-            if(match.homeTeam.id == this.$route.params.id || match.awayTeam.id == this.$route.params.id){
-               return this.currentMatch = match
-            }
+      point(){
+        return this.PLmatches.length && this.team.id 
+          ? this.PLmatches.map(match => {
+            return match.score.winner === 'AWAY_TEAM' 
+              ? match.score.awayTeam.id === this.team.id ? 3 : 0
+              : match.score.homeTeam.id === this.team.id ? 3 : 0
           })
-        })
+          : []
       },
-      loadTeam(){
-        return Api.getTeam(this.$route.params.id)
-          .then(res => this.team = res)
+      PLmatches(){
+        return this.finishedMatches.length 
+          ? this.finishedMatches.filter(item => item.competition.name === 'Premier League') 
+          : []
       },
-      loadMatch(status){
-
-        if(status === 'SCHEDULED') {
-          return Api.getTeamMatches(this.$route.params.id, status, 1)
-            .then(res => this.nextMatch = res.matches[0])
-        }else {
-          return Api.getTeamMatches(this.$route.params.id, status, 1)
-            .then(res => this.lastMatch = res.matches[0])
-        }
-
-      },
-
     },
+
+    methods:{
+      getIcon(match){
+        if(match && this.icons.length){
+          return {
+            homeTeamIcon: this.icons.filter(i => i.id === match.homeTeam.id)[0] || '',
+            awayTeamIcon: this.icons.filter(i => i.id === match.awayTeam.id)[0] || '',
+          }
+        }
+      },
+
+      fetchTeam(){
+        return new Promise((resolve) => {
+          Api.getTeam(+this.$route.params.id)
+            .then(res => this.team = res)
+              resolve()
+        });
+      },
+      fetchNextMatch(){
+          Api.getTeamMatches(+this.$route.params.id, 'SCHEDULED', 1)
+            .then(res=> this.nextMatch = res.matches[0])
+      },
+      fetchLastMatch(){
+          Api.getTeamMatches(+this.$route.params.id, 'FINISHED', 1)
+            .then(res=> this.lastMatch = res.matches[0])
+      }
+    },
+
     mounted(){
-      this.loadCurrentMatchday()
-      this.loadTeam()
-      this.loadMatch('SCHEDULED')
-      this.loadMatch('FINISHED')
+      this.fetchTeam()
+        .then(() => {
+          this.fetchNextMatch()
+        })
+        .then(() => {
+          this.fetchLastMatch()
+        })
     },
     watch:{
-      currentMatchDay(val){
-        if(val){
-          this.loadCurrentMatches(val)
+      '$route'(to, from){
+        if(to.params.id !== from.params.id){
+          this.fetchTeam()
         }
       }
     }

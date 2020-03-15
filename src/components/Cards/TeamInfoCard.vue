@@ -1,5 +1,6 @@
 <template>
-  <v-card  class="text-center pa-3">
+  <app-loader v-if="team === null" />
+  <v-card v-else  class="text-center pa-3">
     <v-responsive class="pt-4">
       <v-avatar size="100" class="grey lighten-2">
         <img :src="team.crestUrl">
@@ -37,7 +38,12 @@
 <script>
   export default {
     name: "TeamInfo",
-    props: ['team']
+    props: {
+      team:{
+        type: Object,
+        required: true
+      }
+    }
   }
 </script>
 

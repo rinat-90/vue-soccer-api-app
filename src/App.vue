@@ -1,22 +1,21 @@
 <template>
   <v-app>
-    <Navbar></Navbar>
+    <navbar />
     <v-content>
-      <router-view></router-view>
+      <router-view />
     </v-content>
   </v-app>
 </template>
 
 <script>
-import Navbar from './components/Navbar';
+import Navbar from './components/Partials/Navbar';
 
 export default {
   name: 'App',
-  components: {
-    Navbar,
-  },
-  data: () => ({
-    //
-  }),
+  components: { Navbar },
+
+  mounted(){
+    this.$store.dispatch('fetchCurrentSeason')
+  }
 };
 </script>
