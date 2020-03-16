@@ -44,7 +44,7 @@ function getMatches(num) {
 
 
 //FETCH MATCHES FOR SPECIFIC TEAM
-function getTeamMatches(id, status, limit) {
+function getTeamMatches(id, status, limit = 1) {
   return fetchAPI(`${ BASE_URL }/teams/${ id }/matches?status=${ status }&limit=${ limit }`)
 }
 

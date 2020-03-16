@@ -12,13 +12,17 @@
             <router-link 
               exact
               :to="`/team/${match.homeTeam.id}`" 
-              :style="'{ opacity: ${isWinner} }'"
+              :style="teamOpacity('HOME_TEAM')"
               class="team-link">
               {{ match.homeTeam.name | teamName }}
             </router-link>
             
             </div>  
-          <div class="ml-auto">{{ getScore('home', match) }}</div>
+          <div 
+            :style="teamOpacity('HOME_TEAM')"
+            class="ml-auto">
+            {{ getScore('home', match) }}
+          </div>
           <span class="icon-wrap">
             <v-icon v-if="match.score.winner === 'HOME_TEAM'">mdi-menu-left</v-icon>
           </span>
@@ -33,12 +37,16 @@
             <router-link 
               exact
               :to="`/team/${match.awayTeam.id}`" 
-              :style="'{ opacity: ${isWinner} }'"
+              :style="teamOpacity('AWAY_TEAM')"
               class="team-link">
               {{ match.awayTeam.name | teamName }}
             </router-link>
           </div>
-          <div class="ml-auto">{{ getScore('away', match) }}</div>
+          <div 
+            :style="teamOpacity('AWAY_TEAM')"
+            class="ml-auto">
+              {{ getScore('away', match) }}
+          </div>
           <span  class="icon-wrap">
             <v-icon v-if="match.score.winner === 'AWAY_TEAM'">mdi-menu-left</v-icon>
           </span>
@@ -72,23 +80,28 @@
     },
     computed:{
       isWinner(){
-        return this.getWinner === 'HOME' 
+        return this.getWinner === null 
           || this.getWinner === 'DRAW' 
-          || this.getWinner === null ? '1' : '0.5'
+          ? true : false  
       },
-
       getWinner(){
         return this.match.score.winner
       }
 
     },
     methods:{
+      teamOpacity(team){
+        return this.isWinner 
+          ? { 'opacity': 1 } 
+          : team === this.getWinner 
+            ? { 'opacity': '1' } 
+            : { 'opacity': '0.6' }
+      },
       getScore(team, match){
         return team && team === 'home'
-          ? match.score.winner ? match.score.fullTime.homeTeam : ''
-          : match.score.winner ? match.score.fullTime.awayTeam : ''
+          ? this.getWinner ? match.score.fullTime.homeTeam : ''
+          : this.getWinner ? match.score.fullTime.awayTeam : ''
       },
-
     },
 
   }

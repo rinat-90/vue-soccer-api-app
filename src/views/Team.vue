@@ -116,28 +116,31 @@
         });
       },
       fetchNextMatch(){
-          Api.getTeamMatches(+this.$route.params.id, 'SCHEDULED', 1)
-            .then(res=> this.nextMatch = res.matches[0])
+        Api.getTeamMatches(+this.$route.params.id, 'SCHEDULED')
+          .then(res=> this.nextMatch = res.matches[0])
       },
       fetchLastMatch(){
-          Api.getTeamMatches(+this.$route.params.id, 'FINISHED', 1)
-            .then(res=> this.lastMatch = res.matches[0])
-      }
+        Api.getTeamMatches(+this.$route.params.id, 'FINISHED')
+          .then(res=> this.lastMatch = res.matches[0])
+      },
+      fetchData(){
+        this.fetchTeam()
+          .then(() => {
+            this.fetchNextMatch()
+          })
+          .then(() => {
+            this.fetchLastMatch()
+          })
+        }
     },
 
     mounted(){
-      this.fetchTeam()
-        .then(() => {
-          this.fetchNextMatch()
-        })
-        .then(() => {
-          this.fetchLastMatch()
-        })
+      this.fetchData()
     },
     watch:{
       '$route'(to, from){
         if(to.params.id !== from.params.id){
-          this.fetchTeam()
+          this.fetchData()
         }
       }
     }
