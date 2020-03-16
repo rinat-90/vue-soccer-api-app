@@ -1,5 +1,5 @@
 const proxy = 'https://cors-anywhere.herokuapp.com/';
-const API_KEY = process.env.VUE_APP_API_KEY;
+const API_KEY = process.env.VUE_APP_API_KEY || '7b970565e3de48238e2e5b10ca7c60b2';
 const BASE_URL = `${proxy}http://api.football-data.org/v2`;
 const LEAGUE_ID = 2021;
 const COMP = 'competitions';
