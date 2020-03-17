@@ -2,7 +2,7 @@
 
 Tools: Vue, Vuetify, <a href="https://www.football-data.org/">https://www.football-data.org/</a> API
 
-Demo: https://soccerapi-ilnykv6se.now.sh/
+Demo: https://vue-soccer-api-app-master.now.sh/
 
 
 ## Project setup
